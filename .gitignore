@@ -72,3 +72,12 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Binary Files
+Binaries/*
+!Binaries/Win64
+Binaries/Win64/*
+!Binaries/Win64/SummerProjectEditor.target
+!Binaries/Win64/UnrealEditor.modules
+!Binaries/Win64/UnrealEditor-SummerProject.dll
+Plugins/*/Binaries/*
