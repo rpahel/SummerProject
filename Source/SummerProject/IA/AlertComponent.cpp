@@ -10,6 +10,11 @@ UAlertComponent::UAlertComponent()
 }
 
 
+void UAlertComponent::ObjectDetected()
+{
+	OnObjectDetected.Broadcast();
+}
+
 void UAlertComponent::BeginPlay()
 {
 	Super::BeginPlay();

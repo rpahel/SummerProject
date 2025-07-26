@@ -6,11 +6,12 @@
 #include "Components/ActorComponent.h"
 #include "AlertComponent.generated.h"
 
-//! Toujours prefixer le nom de ses enums d'un E !!
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE(FOnObjectDetectedEvent, UAlertComponent, OnObjectDetected);
+
 UENUM(BlueprintType)
 enum class EAlertType : uint8
 {
-	EAT_None	= 0 UMETA(Hidden), //! Toujours mettre un None dans ses enums
+	EAT_None	= 0 UMETA(Hidden),
 	EAT_Player	= 1 UMETA(DisplayName = "Player")
 };
 
@@ -22,12 +23,21 @@ class SUMMERPROJECT_API UAlertComponent : public UActorComponent
 public:	
 	UAlertComponent();
 
+	UFUNCTION(BlueprintCallable)
+	EAlertType GetAlertType() {return AlertType; }
+
+	UFUNCTION(BlueprintCallable)
+	void ObjectDetected();
+
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category = "AlertComponent")
-	EAlertType AlertType; //! Toujours mettre une majuscule a la premiere lettre de la variable t'es une fou du c++ pur toi ici c'est UE.
+	EAlertType AlertType;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Components|Alert")
+	FOnObjectDetectedEvent OnObjectDetected;
 };
