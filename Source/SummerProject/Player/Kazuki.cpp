@@ -28,6 +28,7 @@ void AKazuki::PostInitializeComponents()
 void AKazuki::BeginPlay()
 {
 	Super::BeginPlay();
+	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 }
 
 void AKazuki::Tick(float DeltaTime)
@@ -56,19 +57,28 @@ void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerContr
 	}
 
 	if (UInputAction* MovementInputAction = DefaultInputsDataAsset->GetMovementInputAction())
+	{
 		EIC->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &AKazuki::MoveCallback);
+	}
 
 	if (UInputAction* LookInputAction = DefaultInputsDataAsset->GetLookInputAction())
+	{
 		EIC->BindAction(LookInputAction, ETriggerEvent::Triggered, this, &AKazuki::LookCallback);
+	}
 
-	//todo Run, jump, grab, etc. Ne pas oublier la cam.
+	if (UInputAction* RunInputAction = DefaultInputsDataAsset->GetRunInputAction())
+	{
+		EIC->BindAction(RunInputAction, ETriggerEvent::Started, this, &AKazuki::RunStartedCallback);
+		EIC->BindAction(RunInputAction, ETriggerEvent::Completed, this, &AKazuki::RunCompletedCallback);
+		EIC->BindAction(RunInputAction, ETriggerEvent::Canceled, this, &AKazuki::RunCompletedCallback);
+	}
 
-	//if (UInputAction* RunInputAction = DefaultInputsDataAsset->GetRunInputAction())
-	//{
-	//	EIC->BindAction(RunInputAction, ETriggerEvent::Started, this, &AKazuki::MoveCallback);
-	//	EIC->BindAction(RunInputAction, ETriggerEvent::Completed, this, &AKazuki::MoveCompletedCallback);
-	//	EIC->BindAction(RunInputAction, ETriggerEvent::Canceled, this, &AKazuki::MoveCompletedCallback);
-	//}
+	if (UInputAction* JumpInputAction = DefaultInputsDataAsset->GetJumpInputAction())
+	{
+		EIC->BindAction(JumpInputAction, ETriggerEvent::Started, this, &AKazuki::JumpStartedCallback);
+		EIC->BindAction(JumpInputAction, ETriggerEvent::Completed, this, &AKazuki::JumpCompletedCallback);
+		EIC->BindAction(JumpInputAction, ETriggerEvent::Canceled, this, &AKazuki::JumpCompletedCallback);
+	}
 }
 
 //====================================================================================
@@ -84,17 +94,26 @@ void AKazuki::MoveCallback(const FInputActionInstance& InInputInstance)
 void AKazuki::LookCallback(const FInputActionInstance& InInputInstance)
 {
 	const FVector2D inputValue = InInputInstance.GetValue().Get<FVector2D>();
-
-	UE_LOGFMT(LogTemp, Log, "AKazuki::LookCallback : inputValue = {0}", inputValue.ToString());
-
 	AddControllerYawInput(inputValue.X * LookSensitivity);
 	AddControllerPitchInput(-inputValue.Y * LookSensitivity);
 }
 
-void AKazuki::JumpCallback(const FInputActionInstance& InInputInstance)
+void AKazuki::JumpStartedCallback(const FInputActionInstance& InInputInstance)
 {
+	if (CanJump()) Jump();
 }
 
-void AKazuki::RunCallback(const FInputActionInstance& InInputInstance)
+void AKazuki::JumpCompletedCallback(const FInputActionInstance& InInputInstance)
 {
+	StopJumping();
+}
+
+void AKazuki::RunStartedCallback(const FInputActionInstance& InInputInstance)
+{
+	GetCharacterMovement()->MaxWalkSpeed = MaxRunSpeed;
+}
+
+void AKazuki::RunCompletedCallback(const FInputActionInstance& InInputInstance)
+{
+	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 }

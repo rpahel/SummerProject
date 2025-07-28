@@ -46,10 +46,10 @@ private:
 	float LookSensitivity = 1.0f; // Oui c'est sale je sais.
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (Units = "cm/s"))
-	float MaxWalkSpeed = 200.0f;
+	float MaxWalkSpeed = 100.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (Units = "cm/s"))
-	float MaxRunSpeed = 300.0f;
+	float MaxRunSpeed = 150.0f;
 
 	//==== Methods ====
 
@@ -64,8 +64,14 @@ private:
 	void LookCallback(const FInputActionInstance& InInputInstance);
 
 	UFUNCTION()
-	void JumpCallback(const FInputActionInstance& InInputInstance);
+	void JumpStartedCallback(const FInputActionInstance& InInputInstance);
 
 	UFUNCTION()
-	void RunCallback(const FInputActionInstance& InInputInstance);
+	void JumpCompletedCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void RunStartedCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void RunCompletedCallback(const FInputActionInstance& InInputInstance);
 };
