@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "AlertComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE(FOnObjectDetectedEvent, UAlertComponent, OnObjectDetected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnObjectDetectedEvent);
 
 UENUM(BlueprintType)
 enum class EAlertType : uint8
@@ -38,6 +38,6 @@ protected:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(BlueprintAssignable, Category = "Components|Alert")
+	UPROPERTY(BlueprintAssignable, meta = (IsBindableEvent = true), Category = "Components|Alert")
 	FOnObjectDetectedEvent OnObjectDetected;
 };
