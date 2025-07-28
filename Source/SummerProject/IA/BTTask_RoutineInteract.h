@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
+#include <BehaviorTree/Tasks/BTTask_BlackboardBase.h>
 #include <BehaviorTree/ValueOrBBKey.h>
 #include "BTTask_RoutineInteract.generated.h"
 

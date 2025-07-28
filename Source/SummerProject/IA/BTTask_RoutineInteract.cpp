@@ -1,12 +1,10 @@
 // Copyright (c) 2025, Team Kazuki. All rights reserved.
 
 
+#include "BTTask_RoutineInteract.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "RoutineComponent.h"
 #include "AIController.h"
-#include "BTTask_RoutineInteract.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(BTTask_RoutineInteract)
 
 UBTTask_RoutineInteract::UBTTask_RoutineInteract(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer)
@@ -38,15 +36,15 @@ EBTNodeResult::Type UBTTask_RoutineInteract::ExecuteTask(UBehaviorTreeComponent&
 		return EBTNodeResult::Failed;
 	}
 
-
+	return EBTNodeResult::Succeeded;
 }
 
 EBTNodeResult::Type UBTTask_RoutineInteract::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-
+	return EBTNodeResult::Aborted;
 }
 
 void UBTTask_RoutineInteract::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
 {
-
+	
 }
