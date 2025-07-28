@@ -42,11 +42,30 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki")
 	TObjectPtr<UDefaultInputsDataAsset> DefaultInputsDataAsset;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (ClampMin = 0.0f))
+	float LookSensitivity = 1.0f; // Oui c'est sale je sais.
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (Units = "cm/s"))
+	float MaxWalkSpeed = 200.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (Units = "cm/s"))
+	float MaxRunSpeed = 300.0f;
+
 	//==== Methods ====
 
 	void BindInputActions(UInputComponent* InInputComponent, ASPPlayerController* InController);
 
 	//==== Callbacks ====
 
+	UFUNCTION()
 	void MoveCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void LookCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void JumpCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void RunCallback(const FInputActionInstance& InInputInstance);
 };

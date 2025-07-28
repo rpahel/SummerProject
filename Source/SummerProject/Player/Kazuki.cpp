@@ -58,6 +58,9 @@ void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerContr
 	if (UInputAction* MovementInputAction = DefaultInputsDataAsset->GetMovementInputAction())
 		EIC->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &AKazuki::MoveCallback);
 
+	if (UInputAction* LookInputAction = DefaultInputsDataAsset->GetLookInputAction())
+		EIC->BindAction(LookInputAction, ETriggerEvent::Triggered, this, &AKazuki::LookCallback);
+
 	//todo Run, jump, grab, etc. Ne pas oublier la cam.
 
 	//if (UInputAction* RunInputAction = DefaultInputsDataAsset->GetRunInputAction())
@@ -75,8 +78,23 @@ void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerContr
 void AKazuki::MoveCallback(const FInputActionInstance& InInputInstance)
 {
 	const FVector2D inputValue = InInputInstance.GetValue().Get<FVector2D>();
-
-	UE_LOGFMT(LogTemp, Log, "AKazuki::MoveCallback : {0}", inputValue.ToString());
-
 	GetCharacterMovement()->AddInputVector(GetTransform().TransformVectorNoScale(FVector(inputValue, 0)));
+}
+
+void AKazuki::LookCallback(const FInputActionInstance& InInputInstance)
+{
+	const FVector2D inputValue = InInputInstance.GetValue().Get<FVector2D>();
+
+	UE_LOGFMT(LogTemp, Log, "AKazuki::LookCallback : inputValue = {0}", inputValue.ToString());
+
+	AddControllerYawInput(inputValue.X * LookSensitivity);
+	AddControllerPitchInput(-inputValue.Y * LookSensitivity);
+}
+
+void AKazuki::JumpCallback(const FInputActionInstance& InInputInstance)
+{
+}
+
+void AKazuki::RunCallback(const FInputActionInstance& InInputInstance)
+{
 }

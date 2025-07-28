@@ -102,5 +102,6 @@ void ASPPlayerController::SetUpInputMappingContext()
 
 void ASPPlayerController::BindInputActions()
 {
+	SetInputMode(FInputModeGameOnly());
 	if (Kazuki) Kazuki->BindInputActions(InputComponent, this);
 }

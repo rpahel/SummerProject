@@ -18,12 +18,16 @@ class SUMMERPROJECT_API UDefaultInputsDataAsset : public UDataAsset
 
 public:
 	FORCEINLINE UInputAction* GetMovementInputAction()	const { return MovementInputAction; }
+	FORCEINLINE UInputAction* GetLookInputAction()		const { return LookInputAction; }
 	FORCEINLINE UInputAction* GetRunInputAction()		const { return RunInputAction; }
 	FORCEINLINE UInputAction* GetJumpInputAction()		const { return JumpInputAction; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> MovementInputAction;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> LookInputAction;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> RunInputAction;
