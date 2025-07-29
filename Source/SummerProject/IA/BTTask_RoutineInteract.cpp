@@ -14,9 +14,17 @@ Super(ObjectInitializer)
 
 }
 
+/// <summary>
+/// Warning the distance check is squared 
+/// </summary>
+/// <param name="OwnerComp"></param>
+/// <param name="NodeMemory"></param>
+/// <returns></returns>
 EBTNodeResult::Type UBTTask_RoutineInteract::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type NodeResult = EBTNodeResult::InProgress;
+
+	const UBlackboardComponent* MyBlackboard = OwnerComp.GetBlackboardComponent();
 
 	AAIController* AIController = OwnerComp.GetAIOwner();
 	if (!AIController)
@@ -36,7 +44,13 @@ EBTNodeResult::Type UBTTask_RoutineInteract::ExecuteTask(UBehaviorTreeComponent&
 		return EBTNodeResult::Failed;
 	}
 
-	return EBTNodeResult::Succeeded;
+	FVector distance = RoutineComp->GetOwner()->GetActorLocation() - Pawn->GetActorLocation();
+	if (distance.SquaredLength() < InteractionRange.GetValue(*MyBlackboard))
+	{
+		RoutineComp->InteractWithObjective();
+		return EBTNodeResult::Succeeded;
+	}
+	return EBTNodeResult::Failed;
 }
 
 EBTNodeResult::Type UBTTask_RoutineInteract::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

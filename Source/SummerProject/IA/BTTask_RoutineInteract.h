@@ -15,7 +15,7 @@ class SUMMERPROJECT_API UBTTask_RoutineInteract : public UBTTask_BlackboardBase
 public:
 	UBTTask_RoutineInteract(const FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(Category = Node, EditAnywhere, AdvancedDisplay, DisplayName = InteractionRange)
+	UPROPERTY(Category = Interaction, EditAnywhere, DisplayName = InteractionRange)
 	FValueOrBBKey_Float InteractionRange;
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;

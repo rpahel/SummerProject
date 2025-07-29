@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "RoutineComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoutineChangedEvent, int, newIndex);
+
 class UInteractableComponent;
 
 USTRUCT(BlueprintType)
@@ -37,6 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UInteractableComponent* GetCurrentObjectiveInteractable() const;
 
+	UFUNCTION(BlueprintCallable)
+	void GoNextObjective();
+
 private:
 	UPROPERTY(EditAnywhere, Category = "Routine")
 	int32 StartingIndexRoutine = 0;
@@ -56,5 +61,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Routine")
 	TArray<TObjectPtr<UInteractableComponent>> RoutineInteractables;
 
-
+	UPROPERTY(BlueprintAssignable, meta = (IsBindableEvent = true), Category = "Components|Routine")
+	FOnRoutineChangedEvent OnIndexChanged;
 };

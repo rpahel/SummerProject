@@ -13,7 +13,14 @@ URoutineComponent::URoutineComponent()
 
 void URoutineComponent::InteractWithObjective()
 {
-	
+	UInteractableComponent* interactable = GetCurrentObjectiveInteractable();
+	if (!interactable)
+	{
+		return;
+	}
+
+	interactable->Interact(GetOwner());
+	GoNextObjective();
 }
 
 FVector URoutineComponent::GetCurrentObjectivePosition() const
@@ -38,6 +45,15 @@ UInteractableComponent* URoutineComponent::GetCurrentObjectiveInteractable() con
 	}
 
 	return nullptr;
+}
+
+void URoutineComponent::GoNextObjective()
+{
+	++CurrentIndexRoutine;
+	if (CurrentIndexRoutine <= Routine.Num())
+		CurrentIndexRoutine = 0;
+
+	OnIndexChanged.Broadcast(CurrentIndexRoutine);
 }
 
 void URoutineComponent::BeginPlay()
