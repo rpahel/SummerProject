@@ -18,15 +18,15 @@ struct SUMMERPROJECT_API FKazukiAnimationValues
 	GENERATED_BODY()
 
 	FKazukiAnimationValues() = default;
-	FKazukiAnimationValues(float InSpeed, const FVector2D& InDirection, bool InIsJumping, bool InIsFalling)
-		: Speed(InSpeed), Direction(InDirection), IsJumping(InIsJumping), IsFalling(InIsFalling)
+	FKazukiAnimationValues(float InSpeedSqrd, const FVector& InLocalDirection, bool InIsJumping, bool InIsFalling)
+		: SpeedSqrd(InSpeedSqrd), LocalDirection(InLocalDirection), IsJumping(InIsJumping), IsFalling(InIsFalling)
 	{ }
 
 	UPROPERTY(BlueprintReadOnly)
-	float Speed = 0.0f;
+	float SpeedSqrd = 0.0f;
 
 	UPROPERTY(BlueprintReadOnly)
-	FVector2D Direction = FVector2D::ZeroVector;
+	FVector LocalDirection = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool IsJumping = false;

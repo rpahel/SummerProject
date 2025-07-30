@@ -18,19 +18,38 @@ AKazuki::AKazuki()
 
 FKazukiAnimationValues AKazuki::GetAnimationValues() const
 {
-	const FVector velocity = GetCharacterMovement()->GetLastUpdateVelocity();
+	const FVector velocity = GetTransform().InverseTransformVectorNoScale(GetCharacterMovement()->GetLastUpdateVelocity());
+	const FVector velocityNormal = velocity.GetSafeNormal();
 	
+	const FKazukiAnimationValues animValues = FKazukiAnimationValues(
+		velocity.SquaredLength(),
+		velocityNormal,
+		IsJumpProvidingForce(),
+		GetCharacterMovement()->IsFalling());
+
 #if WITH_EDITOR
 	DrawDebugDirectionalArrow(
 		GetWorld(),
 		GetActorLocation(),
-		GetActorLocation() + velocity,
+		GetActorLocation() + GetTransform().TransformVectorNoScale(velocity),
 		25,
-		FColor::Cyan
+		FColor::Cyan,
+		false,
+		-1,
+		0,
+		1
 	);
+
+	const FString debugString = FString::Printf(TEXT("SpeedSqrd = %f\nDirection = %s\nIsJumping = %u\nIsFalling = %u"),
+		animValues.SpeedSqrd,
+		*(animValues.LocalDirection.ToString()),
+		+(animValues.IsJumping),
+		+(animValues.IsFalling));
+
+	GEngine->AddOnScreenDebugMessage(0, 2, FColor::Cyan, debugString);
 #endif // WITH_EDITOR
 
-	return FKazukiAnimationValues();
+	return animValues;
 }
 
 //====================================================================================
@@ -117,7 +136,10 @@ void AKazuki::LookCallback(const FInputActionInstance& InInputInstance)
 
 void AKazuki::JumpStartedCallback(const FInputActionInstance& InInputInstance)
 {
-	if (CanJump()) Jump();
+	if (CanJump())
+	{
+		Jump();
+	}
 }
 
 void AKazuki::JumpCompletedCallback(const FInputActionInstance& InInputInstance)
