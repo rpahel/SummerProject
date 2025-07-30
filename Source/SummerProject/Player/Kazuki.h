@@ -18,15 +18,15 @@ struct SUMMERPROJECT_API FKazukiAnimationValues
 	GENERATED_BODY()
 
 	FKazukiAnimationValues() = default;
-	FKazukiAnimationValues(float InSpeedSqrd, const FVector& InLocalDirection, bool InIsJumping, bool InIsFalling)
-		: SpeedSqrd(InSpeedSqrd), LocalDirection(InLocalDirection), IsJumping(InIsJumping), IsFalling(InIsFalling)
+	FKazukiAnimationValues(const FVector& InLocalDirection, float InSpeedSqrd, bool InIsJumping, bool InIsFalling)
+		: LocalDirection(InLocalDirection), SpeedSqrd(InSpeedSqrd), IsJumping(InIsJumping), IsFalling(InIsFalling)
 	{ }
 
 	UPROPERTY(BlueprintReadOnly)
-	float SpeedSqrd = 0.0f;
+	FVector LocalDirection = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadOnly)
-	FVector LocalDirection = FVector::ZeroVector;
+	float SpeedSqrd = 0.0f;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool IsJumping = false;
@@ -78,6 +78,14 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (Units = "cm/s"))
 	float MaxRunSpeed = 150.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (Units = "cm/s"))
+	float MaxStrafeSpeed = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (ToolTip = "Rapport de movement vers l'avant sous lequel on considere qu'on strafe."))
+	float StrafeRatio = 0.707f;
+
+	bool bIsRunning = false;
 
 	//==== Methods ====
 

@@ -20,10 +20,11 @@ FKazukiAnimationValues AKazuki::GetAnimationValues() const
 {
 	const FVector velocity = GetTransform().InverseTransformVectorNoScale(GetCharacterMovement()->GetLastUpdateVelocity());
 	const FVector velocityNormal = velocity.GetSafeNormal();
-	
+	const float currentSpeedSqrd = velocity.SquaredLength();
+
 	const FKazukiAnimationValues animValues = FKazukiAnimationValues(
-		velocity.SquaredLength(),
-		velocityNormal,
+		velocityNormal * (currentSpeedSqrd / (MaxWalkSpeed * MaxWalkSpeed)),
+		currentSpeedSqrd,
 		IsJumpProvidingForce(),
 		GetCharacterMovement()->IsFalling());
 
@@ -125,6 +126,10 @@ void AKazuki::MoveCallback(const FInputActionInstance& InInputInstance)
 {
 	const FVector2D inputValue = InInputInstance.GetValue().Get<FVector2D>();
 	GetCharacterMovement()->AddInputVector(GetTransform().TransformVectorNoScale(FVector(inputValue, 0)));
+	if (FVector2D::UnitX().Dot(inputValue.GetSafeNormal()) < StrafeRatio)
+		GetCharacterMovement()->MaxWalkSpeed = MaxStrafeSpeed;
+	else
+		GetCharacterMovement()->MaxWalkSpeed = bIsRunning ? MaxRunSpeed : MaxWalkSpeed;
 }
 
 void AKazuki::LookCallback(const FInputActionInstance& InInputInstance)
@@ -150,9 +155,11 @@ void AKazuki::JumpCompletedCallback(const FInputActionInstance& InInputInstance)
 void AKazuki::RunStartedCallback(const FInputActionInstance& InInputInstance)
 {
 	GetCharacterMovement()->MaxWalkSpeed = MaxRunSpeed;
+	bIsRunning = true;
 }
 
 void AKazuki::RunCompletedCallback(const FInputActionInstance& InInputInstance)
 {
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	bIsRunning = false;
 }
