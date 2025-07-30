@@ -12,6 +12,29 @@ class UCameraComponent;
 class UDefaultInputsDataAsset;
 struct FInputActionInstance;
 
+USTRUCT(BlueprintType)
+struct SUMMERPROJECT_API FKazukiAnimationValues
+{
+	GENERATED_BODY()
+
+	FKazukiAnimationValues() = default;
+	FKazukiAnimationValues(float InSpeed, const FVector2D& InDirection, bool InIsJumping, bool InIsFalling)
+		: Speed(InSpeed), Direction(InDirection), IsJumping(InIsJumping), IsFalling(InIsFalling)
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	float Speed = 0.0f;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector2D Direction = FVector2D::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool IsJumping = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool IsFalling = false;
+};
+
 //! I'm too lazy to separate each feature to its component
 //! so i'm doing everything in this class.
 //! It's a one week prototype after all.
@@ -28,6 +51,11 @@ public:
 	//==== Constructors ====
 
 	AKazuki();
+
+	//==== Methods ====
+
+	UFUNCTION(BlueprintCallable)
+	FKazukiAnimationValues GetAnimationValues() const; // Called by Animation Blueprint
 
 protected:
 	//==== Overrides ====

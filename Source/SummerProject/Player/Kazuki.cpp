@@ -16,6 +16,23 @@ AKazuki::AKazuki()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+FKazukiAnimationValues AKazuki::GetAnimationValues() const
+{
+	const FVector velocity = GetCharacterMovement()->GetLastUpdateVelocity();
+	
+#if WITH_EDITOR
+	DrawDebugDirectionalArrow(
+		GetWorld(),
+		GetActorLocation(),
+		GetActorLocation() + velocity,
+		25,
+		FColor::Cyan
+	);
+#endif // WITH_EDITOR
+
+	return FKazukiAnimationValues();
+}
+
 //====================================================================================
 //==== PROTECTED OVERRIDES
 //====================================================================================
