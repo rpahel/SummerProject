@@ -18,12 +18,15 @@ struct SUMMERPROJECT_API FKazukiAnimationValues
 	GENERATED_BODY()
 
 	FKazukiAnimationValues() = default;
-	FKazukiAnimationValues(const FVector& InLocalDirection, float InSpeedSqrd, bool InIsJumping, bool InIsFalling)
-		: LocalDirection(InLocalDirection), SpeedSqrd(InSpeedSqrd), IsJumping(InIsJumping), IsFalling(InIsFalling)
+	FKazukiAnimationValues(const FVector& InLocalDirection, const FVector& InLookAtLocation, float InSpeedSqrd, bool InIsJumping, bool InIsFalling)
+		: LocalDirection(InLocalDirection), LookAtLocation(InLookAtLocation), SpeedSqrd(InSpeedSqrd), IsJumping(InIsJumping), IsFalling(InIsFalling)
 	{ }
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector LocalDirection = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector LookAtLocation = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadOnly)
 	float SpeedSqrd = 0.0f;
@@ -65,7 +68,7 @@ protected:
 	void Tick(float DeltaTime) final;
 
 private:
-	//==== Properties ====
+	//==== Exposed Properties ====
 
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki")
 	TObjectPtr<UDefaultInputsDataAsset> DefaultInputsDataAsset;
@@ -85,6 +88,14 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (ToolTip = "Rapport de movement vers l'avant sous lequel on considere qu'on strafe."))
 	float StrafeRatio = 0.707f;
 
+	//==== Hidden Properties ====
+
+	UPROPERTY()
+	TObjectPtr<USceneComponent> CameraComponent = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent = nullptr;
+
 	bool bIsRunning = false;
 
 	//==== Methods ====
@@ -95,6 +106,12 @@ private:
 
 	UFUNCTION()
 	void MoveCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void MoveStartedCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void MoveCompletedCallback(const FInputActionInstance& InInputInstance);
 
 	UFUNCTION()
 	void LookCallback(const FInputActionInstance& InInputInstance);

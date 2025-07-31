@@ -4,8 +4,11 @@
 #include "DefaultInputsDataAsset.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Logging/StructuredLog.h"
+
+#define LOOK_DISTANCE 200
 
 //====================================================================================
 //==== PUBLIC CONSTRUCTORS
@@ -22,8 +25,19 @@ FKazukiAnimationValues AKazuki::GetAnimationValues() const
 	const FVector velocityNormal = velocity.GetSafeNormal();
 	const float currentSpeedSqrd = velocity.SquaredLength();
 
+	FVector lookAtLocation;
+	if (CameraComponent)
+	{
+		lookAtLocation = CameraComponent->GetComponentLocation() + CameraComponent->GetForwardVector() * LOOK_DISTANCE;
+	}
+	else
+	{
+		lookAtLocation = GetActorLocation() + GetActorForwardVector() * LOOK_DISTANCE;
+	}
+
 	const FKazukiAnimationValues animValues = FKazukiAnimationValues(
 		velocityNormal * (currentSpeedSqrd / (MaxWalkSpeed * MaxWalkSpeed)),
+		lookAtLocation,
 		currentSpeedSqrd,
 		IsJumpProvidingForce(),
 		GetCharacterMovement()->IsFalling());
@@ -32,7 +46,7 @@ FKazukiAnimationValues AKazuki::GetAnimationValues() const
 	DrawDebugDirectionalArrow(
 		GetWorld(),
 		GetActorLocation(),
-		GetActorLocation() + GetTransform().TransformVectorNoScale(velocity),
+		GetActorLocation() + GetTransform().TransformVectorNoScale(velocity) * 0.5f,
 		25,
 		FColor::Cyan,
 		false,
@@ -60,12 +74,15 @@ FKazukiAnimationValues AKazuki::GetAnimationValues() const
 void AKazuki::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	CameraComponent = GetComponentByClass<UCameraComponent>();
+	SkeletalMeshComponent = GetComponentByClass<USkeletalMeshComponent>();
 }
 
 void AKazuki::BeginPlay()
 {
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	bUseControllerRotationYaw = false;
 }
 
 void AKazuki::Tick(float DeltaTime)
@@ -76,7 +93,7 @@ void AKazuki::Tick(float DeltaTime)
 //====================================================================================
 //==== PRIVATE METHODS
 //====================================================================================
-
+ 
 void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerController* InController)
 {
 	UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InInputComponent);
@@ -95,7 +112,10 @@ void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerContr
 
 	if (UInputAction* MovementInputAction = DefaultInputsDataAsset->GetMovementInputAction())
 	{
+		EIC->BindAction(MovementInputAction, ETriggerEvent::Started, this, &AKazuki::MoveStartedCallback);
 		EIC->BindAction(MovementInputAction, ETriggerEvent::Triggered, this, &AKazuki::MoveCallback);
+		EIC->BindAction(MovementInputAction, ETriggerEvent::Completed, this, &AKazuki::MoveCompletedCallback);
+		EIC->BindAction(MovementInputAction, ETriggerEvent::Canceled, this, &AKazuki::MoveCompletedCallback);
 	}
 
 	if (UInputAction* LookInputAction = DefaultInputsDataAsset->GetLookInputAction())
@@ -122,6 +142,11 @@ void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerContr
 //==== PRIVATE CALLBACKS
 //====================================================================================
 
+void AKazuki::MoveStartedCallback(const FInputActionInstance& InInputInstance)
+{
+	bUseControllerRotationYaw = true;
+}
+
 void AKazuki::MoveCallback(const FInputActionInstance& InInputInstance)
 {
 	const FVector2D inputValue = InInputInstance.GetValue().Get<FVector2D>();
@@ -130,6 +155,11 @@ void AKazuki::MoveCallback(const FInputActionInstance& InInputInstance)
 		GetCharacterMovement()->MaxWalkSpeed = MaxStrafeSpeed;
 	else
 		GetCharacterMovement()->MaxWalkSpeed = bIsRunning ? MaxRunSpeed : MaxWalkSpeed;
+}
+
+void AKazuki::MoveCompletedCallback(const FInputActionInstance& InInputInstance)
+{
+	bUseControllerRotationYaw = false;
 }
 
 void AKazuki::LookCallback(const FInputActionInstance& InInputInstance)
