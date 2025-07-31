@@ -10,6 +10,7 @@ class ASPPlayerController;
 class USpringArmComponent;
 class UCameraComponent;
 class UDefaultInputsDataAsset;
+class APhysicsConstraintActor;
 struct FInputActionInstance;
 
 USTRUCT(BlueprintType)
@@ -101,6 +102,12 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<APhysicsConstraintActor> CurrentPhysicsConstraintActor = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPrimitiveComponent> CurrentGrabbedComponent = nullptr;
 
 	bool bIsRunning = false;
 	bool bIsGrabPressed = false;

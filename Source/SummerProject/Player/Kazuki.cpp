@@ -4,7 +4,10 @@
 #include "DefaultInputsDataAsset.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
-#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "PhysicsEngine/PhysicsConstraintActor.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Logging/StructuredLog.h"
@@ -245,7 +248,51 @@ void AKazuki::GrabStartedCallback(const FInputActionInstance& InInputInstance)
 		);
 #endif // WITH_EDITOR
 
-		hitResult.GetComponent()->WakeRigidBody();
+		const FVector boneLocation = SkeletalMeshComponent->GetBoneLocation(GrabBoneName) + FVector::UpVector * 15 /* 5 petit cm vers le haut */;
+		hitActor->SetActorLocation(hitActor->GetActorLocation() + (boneLocation - hitResult.ImpactPoint) / 2);
+		if (CurrentPhysicsConstraintActor) CurrentPhysicsConstraintActor->Destroy();
+		FActorSpawnParameters params;
+		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		//CurrentPhysicsConstraintActor = GetWorld()->SpawnActor<APhysicsConstraintActor>(boneLocation, GetActorRotation(), params);
+		CurrentPhysicsConstraintActor = GetWorld()->SpawnActorDeferred<APhysicsConstraintActor>(
+			APhysicsConstraintActor::StaticClass(),
+			FTransform(GetActorQuat(), boneLocation),
+			nullptr,
+			nullptr,
+			ESpawnActorCollisionHandlingMethod::AlwaysSpawn
+		);
+
+		if (CurrentPhysicsConstraintActor)
+		{
+			if (UPhysicsConstraintComponent* constraintComp = CurrentPhysicsConstraintActor->GetConstraintComp())
+			{
+				constraintComp->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 45/*deg*/);
+				constraintComp->SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, 20/*deg*/);
+				constraintComp->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, 10/*deg*/);
+				constraintComp->SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 0);
+				constraintComp->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0);
+				constraintComp->SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0);
+
+				constraintComp->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
+
+				constraintComp->ConstraintActor1 = this;
+				constraintComp->ConstraintActor2 = hitActor;
+
+				constraintComp->ConstraintInstance.SetSoftSwingLimitParams(
+					true	/* bIsSoftLimit */,
+					0		/* Stiffness */,
+					5		/* Damping */,
+					0		/* Restitution */,
+					0		/* ContactDistance */
+				);
+
+				// Disable collisions
+				CurrentGrabbedComponent = hitResult.GetComponent();
+				CurrentGrabbedComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+			}
+
+			UGameplayStatics::FinishSpawningActor(CurrentPhysicsConstraintActor, FTransform(GetActorQuat(), boneLocation));
+		}
 	}
 #if WITH_EDITOR
 	else
@@ -258,6 +305,28 @@ void AKazuki::GrabStartedCallback(const FInputActionInstance& InInputInstance)
 void AKazuki::GrabCompletedCallback(const FInputActionInstance& InInputInstance)
 {
 	bIsGrabPressed = false;
+
+	if (CurrentPhysicsConstraintActor)
+	{
+		CurrentPhysicsConstraintActor->GetConstraintComp()->BreakConstraint();
+		CurrentPhysicsConstraintActor->Destroy();
+	}
+
+	if (CurrentGrabbedComponent)
+	{
+		// On reactive les collisions avec le rat une seconde plus tard
+		FTimerHandle handle;
+		GetWorld()->GetTimerManager().SetTimer(
+			handle,
+			[comp = CurrentGrabbedComponent]()
+			{
+				if (comp) comp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+			},
+			1.0f,
+			false
+		);
+		CurrentGrabbedComponent = nullptr;
+	}
 
 #if WITH_EDITOR
 	GEngine->AddOnScreenDebugMessage(2, 2, FColor::Red, "AKazuki::GrabStartedCallback -> END GRAB.");
