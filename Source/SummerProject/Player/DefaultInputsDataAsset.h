@@ -21,6 +21,7 @@ public:
 	FORCEINLINE UInputAction* GetLookInputAction()		const { return LookInputAction; }
 	FORCEINLINE UInputAction* GetRunInputAction()		const { return RunInputAction; }
 	FORCEINLINE UInputAction* GetJumpInputAction()		const { return JumpInputAction; }
+	FORCEINLINE UInputAction* GetGrabInputAction()		const { return GrabInputAction; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -34,4 +35,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> JumpInputAction;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> GrabInputAction;
 };

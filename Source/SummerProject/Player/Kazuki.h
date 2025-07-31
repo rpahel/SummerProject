@@ -73,6 +73,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki")
 	TObjectPtr<UDefaultInputsDataAsset> DefaultInputsDataAsset;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki")
+	FName GrabBoneName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (ClampMin = 0.0f))
+	float LookDistance = 200.0f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Kazuki", meta = (ClampMin = 0.0f))
 	float LookSensitivity = 1.0f; // Oui c'est sale je sais.
 
@@ -97,10 +103,12 @@ private:
 	TObjectPtr<USkeletalMeshComponent> SkeletalMeshComponent = nullptr;
 
 	bool bIsRunning = false;
+	bool bIsGrabPressed = false;
 
 	//==== Methods ====
 
 	void BindInputActions(UInputComponent* InInputComponent, ASPPlayerController* InController);
+	AActor* TraceForGrabbableObject(FHitResult& OutHitResult) const;
 
 	//==== Callbacks ====
 
@@ -127,4 +135,10 @@ private:
 
 	UFUNCTION()
 	void RunCompletedCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void GrabStartedCallback(const FInputActionInstance& InInputInstance);
+
+	UFUNCTION()
+	void GrabCompletedCallback(const FInputActionInstance& InInputInstance);
 };

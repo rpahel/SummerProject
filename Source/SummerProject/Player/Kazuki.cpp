@@ -4,11 +4,12 @@
 #include "DefaultInputsDataAsset.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "Logging/StructuredLog.h"
 
-#define LOOK_DISTANCE 200
+constexpr ECollisionChannel GrabbableCollisionChannel = ECC_GameTraceChannel1;
 
 //====================================================================================
 //==== PUBLIC CONSTRUCTORS
@@ -28,11 +29,11 @@ FKazukiAnimationValues AKazuki::GetAnimationValues() const
 	FVector lookAtLocation;
 	if (CameraComponent)
 	{
-		lookAtLocation = CameraComponent->GetComponentLocation() + CameraComponent->GetForwardVector() * LOOK_DISTANCE;
+		lookAtLocation = CameraComponent->GetComponentLocation() + CameraComponent->GetForwardVector() * LookDistance;
 	}
 	else
 	{
-		lookAtLocation = GetActorLocation() + GetActorForwardVector() * LOOK_DISTANCE;
+		lookAtLocation = GetActorLocation() + GetActorForwardVector() * LookDistance;
 	}
 
 	const FKazukiAnimationValues animValues = FKazukiAnimationValues(
@@ -74,6 +75,7 @@ FKazukiAnimationValues AKazuki::GetAnimationValues() const
 void AKazuki::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
 	CameraComponent = GetComponentByClass<UCameraComponent>();
 	SkeletalMeshComponent = GetComponentByClass<USkeletalMeshComponent>();
 }
@@ -136,6 +138,36 @@ void AKazuki::BindInputActions(UInputComponent* InInputComponent, ASPPlayerContr
 		EIC->BindAction(JumpInputAction, ETriggerEvent::Completed, this, &AKazuki::JumpCompletedCallback);
 		EIC->BindAction(JumpInputAction, ETriggerEvent::Canceled, this, &AKazuki::JumpCompletedCallback);
 	}
+
+	if (UInputAction* GrabInputAction = DefaultInputsDataAsset->GetGrabInputAction())
+	{
+		EIC->BindAction(GrabInputAction, ETriggerEvent::Triggered, this, &AKazuki::GrabStartedCallback);
+		EIC->BindAction(GrabInputAction, ETriggerEvent::Completed, this, &AKazuki::GrabCompletedCallback);
+		EIC->BindAction(GrabInputAction, ETriggerEvent::Canceled, this, &AKazuki::GrabCompletedCallback);
+	}
+}
+
+AActor* AKazuki::TraceForGrabbableObject(FHitResult& OutHitResult) const
+{
+	if (!CameraComponent)
+		return nullptr;
+
+	const FVector cameraLocation = CameraComponent->GetComponentLocation();
+
+	FCollisionObjectQueryParams objectParams(GrabbableCollisionChannel);
+	FCollisionQueryParams params("GrabTrace", true);
+
+	if (GetWorld()->LineTraceSingleByObjectType(
+		OutHitResult,
+		cameraLocation,
+		cameraLocation + CameraComponent->GetForwardVector() * LookDistance,
+		objectParams,
+		params))
+	{
+		return OutHitResult.GetActor();
+	}
+
+	return nullptr;
 }
 
 //====================================================================================
@@ -192,4 +224,42 @@ void AKazuki::RunCompletedCallback(const FInputActionInstance& InInputInstance)
 {
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	bIsRunning = false;
+}
+
+void AKazuki::GrabStartedCallback(const FInputActionInstance& InInputInstance)
+{
+	if (bIsGrabPressed) return;
+	bIsGrabPressed = true;
+
+	FHitResult hitResult;
+	if (AActor* hitActor = TraceForGrabbableObject(hitResult))
+	{
+#if WITH_EDITOR
+		DrawDebugPoint(
+			GetWorld(),
+			hitResult.ImpactPoint,
+			10,
+			FColor::Green,
+			false,
+			2
+		);
+#endif // WITH_EDITOR
+
+		hitResult.GetComponent()->WakeRigidBody();
+	}
+#if WITH_EDITOR
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(1, 2, FColor::Red, "AKazuki::GrabStartedCallback -> NO GRABBABLE ACTOR HIT.");
+	}
+#endif
+}
+
+void AKazuki::GrabCompletedCallback(const FInputActionInstance& InInputInstance)
+{
+	bIsGrabPressed = false;
+
+#if WITH_EDITOR
+	GEngine->AddOnScreenDebugMessage(2, 2, FColor::Red, "AKazuki::GrabStartedCallback -> END GRAB.");
+#endif
 }
