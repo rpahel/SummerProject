@@ -16,6 +16,7 @@ void URoutineComponent::InteractWithObjective()
 	UInteractableComponent* interactable = GetCurrentObjectiveInteractable();
 	if (!interactable)
 	{
+		GoNextObjective();
 		return;
 	}
 
