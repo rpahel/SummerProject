@@ -15,11 +15,11 @@ struct FRoutineObjective
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
-	FVector ObjectivePosition;
+	UPROPERTY(EditAnywhere, meta = (MakeEditWidget))
+	FVector ObjectivePosition = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere)
-	int ObjectiveIndex;
+	int ObjectiveIndex = 0;
 };
 
 UCLASS(ClassGroup = (SummerProject), meta = (BlueprintSpawnableComponent), AutoExpandCategories = "RoutineComponent")
