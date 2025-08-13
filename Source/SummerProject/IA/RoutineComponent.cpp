@@ -51,9 +51,10 @@ UInteractableComponent* URoutineComponent::GetCurrentObjectiveInteractable() con
 void URoutineComponent::GoNextObjective()
 {
 	++CurrentIndexRoutine;
-	if (CurrentIndexRoutine <= Routine.Num())
+	if (CurrentIndexRoutine >= Routine.Num())
 		CurrentIndexRoutine = 0;
 
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, "Changed Objective");
 	OnIndexChanged.Broadcast(CurrentIndexRoutine);
 }
 

@@ -44,7 +44,8 @@ EBTNodeResult::Type UBTTask_RoutineInteract::ExecuteTask(UBehaviorTreeComponent&
 		return EBTNodeResult::Failed;
 	}
 
-	FVector distance = RoutineComp->GetOwner()->GetActorLocation() - Pawn->GetActorLocation();
+	FVector distance = RoutineComp->GetCurrentObjectivePosition() - Pawn->GetActorLocation();
+	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::SanitizeFloat(distance.SquaredLength()));
 	if (distance.SquaredLength() < InteractionRange.GetValue(*MyBlackboard))
 	{
 		RoutineComp->InteractWithObjective();
